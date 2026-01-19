@@ -1,0 +1,24 @@
+/* app/globals.css */
+@import "tailwindcss";
+
+@theme {
+  --font-outfit: var(--font-outfit);
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply font-outfit antialiased bg-white text-slate-900 transition-colors duration-300;
+  }
+}
+
+@layer components {
+  .auth-input {
+    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm 
+           transition-all placeholder:text-slate-400
+           focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 
+           dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-900/20;
+  }
+}
