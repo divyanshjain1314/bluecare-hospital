@@ -8,7 +8,7 @@ const PatientSchema = new Schema({
     phone: { type: String, required: true },
     lastVisit: { type: String, default: () => new Date().toISOString().split('T')[0] },
     status: { type: String, enum: ['Stable', 'Critical', 'Recovered'], default: 'Stable' },
-    createdBy: { type: String, required: true }, // Doctor's email
+    createdBy: { type: String, required: true },
 }, { timestamps: true });
 
 const Patient = models.Patient || model('Patient', PatientSchema);

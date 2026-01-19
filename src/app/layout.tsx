@@ -1,6 +1,7 @@
 import { Outfit } from 'next/font/google';
 import { Providers } from "./providers";
 import './globals.css';
+import "react-datepicker/dist/react-datepicker.css";
 import { ThemeWatcher } from '@/components/ThemeWatcher';
 
 const outfit = Outfit({

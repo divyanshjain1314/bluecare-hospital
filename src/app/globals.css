@@ -22,3 +22,44 @@
            dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-900/20;
   }
 }
+/* --- DatePicker Color Fixes (Light & Dark Mode) --- */
+
+/* 1. Selected Day (Selected state ka background aur text) */
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected,
+.react-datepicker__time-list-item--selected {
+  @apply !bg-blue-600 !text-white !font-bold;
+}
+
+/* 2. Hover State (Din par mouse le jane par) */
+.react-datepicker__day:hover,
+.react-datepicker__time-list-item:hover {
+  @apply !bg-blue-50 !text-blue-600 dark:!bg-slate-800 dark:!text-white;
+}
+
+/* 3. Dark Mode Pop-up Colors */
+.dark .react-datepicker,
+.dark .react-datepicker__header,
+.dark .react-datepicker__time-container,
+.dark .react-datepicker__time {
+  @apply !bg-slate-950 !border-slate-800;
+}
+
+/* 4. Text Colors in Dark Mode */
+.dark .react-datepicker__current-month,
+.dark .react-datepicker__day-name,
+.dark .react-datepicker__day,
+.dark .react-datepicker__time-name,
+.dark .react-datepicker__time-list-item {
+  @apply !text-slate-300;
+}
+
+/* 5. Specific Fix: Dark Mode mein selected text white hi rahe */
+.dark .react-datepicker__day--selected {
+  @apply !text-white !bg-blue-600;
+}
+
+/* 7. Disabled Days (Purani dates) */
+.react-datepicker__day--disabled {
+  @apply !text-slate-300 dark:!text-slate-700 cursor-not-allowed! hover:!bg-transparent;
+}

@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
+import { generateTokenAndUserResponse } from '@/lib/auth';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
 
@@ -20,25 +21,11 @@ export async function POST(request: Request) {
         if (!isPasswordCorrect) {
             return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
         }
-
-        const token = await new SignJWT({
-            email: user.email,
-            id: user._id,
-            role: user.role
-        })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setExpirationTime('24h')
-            .sign(JWT_SECRET);
-
+        const { token: jwtToken, user: userData } = generateTokenAndUserResponse(user);
         return NextResponse.json({
-            user: {
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                role: user.role,
-                department: user.department
-            },
-            token
+            message: "logged in successfully",
+            user: userData,
+            token: jwtToken
         }, { status: 200 });
 
     } catch (error: any) {
