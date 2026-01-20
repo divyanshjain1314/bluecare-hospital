@@ -8,9 +8,12 @@ const TYPE_CONFIG: any = {
     General: { icon: HomeIcon, text: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' }
 };
 
-export const BedCard = ({ bed, isSelected, onSelect, onDelete }: any) => {
+export const BedCard = ({ bed, isSelected, onSelect, onDelete, departments }: any) => {
     const config = TYPE_CONFIG[bed.type] || TYPE_CONFIG.General;
     const Icon = config.icon;
+
+    const departmentObj = departments.find((dept: any) => dept.value === bed.department);
+    const departmentName = departmentObj ? departmentObj.label : 'Unknown Dept';
 
     return (
         <div
@@ -32,7 +35,7 @@ export const BedCard = ({ bed, isSelected, onSelect, onDelete }: any) => {
             <p className="text-[10px] font-semibold text-slate-400 uppercase mb-4">{bed.type} Unit</p>
 
             <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-                <span className="text-[10px] font-medium text-slate-500 truncate w-24 uppercase">{bed.department}</span>
+                <span className="text-[10px] font-medium text-slate-500 truncate w-24 uppercase">{departmentName}</span>
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(bed._id, bed.status); }}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"

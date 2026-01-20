@@ -166,6 +166,7 @@ export default function BedAndICUPage() {
                                 if (status === 'Occupied') return alert("Occupied units cannot be removed!");
                                 if (confirm("Remove this unit?")) { await axios.delete(`/api/beds?id=${id}`); fetchBeds(); }
                             }}
+                            departments={departments}
                         />
                     ))}
                 </div>
