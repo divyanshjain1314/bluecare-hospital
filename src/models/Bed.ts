@@ -16,7 +16,8 @@ const BedSchema = new mongoose.Schema({
     },
 
     department: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Department',
         required: true
     },
 
@@ -48,6 +49,6 @@ const BedSchema = new mongoose.Schema({
     timestamps: true
 });
 
-BedSchema.index({ status: 1, type: 1 });
+BedSchema.index({ status: 1, type: 1, department: 1 });
 
 export default mongoose.models.Bed || mongoose.model('Bed', BedSchema);

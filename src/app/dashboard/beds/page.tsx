@@ -3,209 +3,221 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import { 
-    PlusIcon, 
-    Squares2X2Icon, 
-    ListBulletIcon,
-    BoltIcon, // ICU ke liye
-    CloudIcon, // Ventilator ke liye
-    ExclamationTriangleIcon, // Emergency ke liye
-    HomeIcon // General ke liye
+import {
+    PlusIcon,
+    Squares2X2Icon,
+    NoSymbolIcon,
+    TrashIcon,
+    CheckCircleIcon,
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-
-// Bed configurations for different types
-const TYPE_CONFIG: any = {
-    ICU: {
-        icon: BoltIcon,
-        color: 'from-purple-500 to-indigo-600',
-        bg: 'bg-purple-50 dark:bg-purple-900/10',
-        border: 'border-purple-200 dark:border-purple-800/50',
-        text: 'text-purple-600 dark:text-purple-400'
-    },
-    Ventilator: {
-        icon: CloudIcon,
-        color: 'from-cyan-500 to-blue-600',
-        bg: 'bg-cyan-50 dark:bg-cyan-900/10',
-        border: 'border-cyan-200 dark:border-cyan-800/50',
-        text: 'text-cyan-600 dark:text-cyan-400'
-    },
-    Emergency: {
-        icon: ExclamationTriangleIcon,
-        color: 'from-rose-500 to-red-600',
-        bg: 'bg-rose-50 dark:bg-rose-900/10',
-        border: 'border-rose-200 dark:border-rose-800/50',
-        text: 'text-rose-600 dark:text-rose-400'
-    },
-    General: {
-        icon: HomeIcon,
-        color: 'from-emerald-500 to-teal-600',
-        bg: 'bg-emerald-50 dark:bg-emerald-900/10',
-        border: 'border-emerald-200 dark:border-emerald-800/50',
-        text: 'text-emerald-600 dark:text-emerald-400'
-    }
-};
+import { BedCard } from '@/components/beds/BedCard';
+import { BedFilters } from '@/components/beds/BedFilters';
 
 export default function BedAndICUPage() {
     const [beds, setBeds] = useState([]);
+    const [filteredBeds, setFilteredBeds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+    const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+    const [selectedBeds, setSelectedBeds] = useState<string[]>([]);
+    const [activeFilter, setActiveFilter] = useState('All');
 
     const [bulkData, setBulkData] = useState({
-        prefix: 'BED',
+        prefix: 'B',
         startNumber: 1,
         count: 10,
         type: 'General',
-        department: 'General Ward'
+        department: ''
     });
 
+    const [clearDeptId, setClearDeptId] = useState('');
+    const [departments, setDepartments] = useState([]);
     const { user } = useSelector((state: any) => state.auth);
+
+    const fetchDepartments = async () => {
+        try {
+            const res = await axios.get('/api/departments');
+            const options = res.data.map((dept: any) => ({
+                value: dept._id,
+                label: dept.name
+            }));
+            setDepartments(options);
+        } catch (err) { console.error(err); }
+    };
 
     const fetchBeds = async () => {
         setLoading(true);
         try {
             const res = await axios.get('/api/beds');
             setBeds(res.data);
+            setFilteredBeds(res.data);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
 
-    useEffect(() => { fetchBeds(); }, []);
+    useEffect(() => {
+        fetchDepartments();
+        fetchBeds();
+    }, []);
+
+    useEffect(() => {
+        setFilteredBeds(activeFilter === 'All' ? beds : beds.filter((b: any) => b.type === activeFilter));
+    }, [activeFilter, beds]);
 
     const handleBulkAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await axios.post('/api/beds/bulk', { 
-        ...bulkData, 
-        createdBy: user.id 
-      });
-      setIsModalOpen(false);
-      fetchBeds();
-    } catch (err) {
-      alert("Error generating beds");
-    }
-  };
+        e.preventDefault();
+        try {
+            await axios.post('/api/beds', { ...bulkData, createdBy: user?.id || user?._id });
+            setIsModalOpen(false);
+            fetchBeds();
+        } catch (err) { alert("Generation failed!"); }
+    };
 
+    const handleClearDeptSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!clearDeptId) return alert("Please select a department");
+
+        try {
+            await axios.delete(`/api/beds?department=${clearDeptId}`);
+            setIsClearModalOpen(false);
+            setClearDeptId('');
+            fetchBeds();
+        } catch (err) { alert("Clear operation failed"); }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedBeds.length === filteredBeds.length) {
+            setSelectedBeds([]);
+        } else {
+            setSelectedBeds(filteredBeds.map((b: any) => b._id));
+        }
+    };
+    const handleBulkDelete = async () => {
+        if (!confirm(`Delete ${selectedBeds.length} selected units?`)) return;
+        try {
+            await axios.delete(`/api/beds?ids=${selectedBeds.join(',')}`);
+            setSelectedBeds([]);
+            fetchBeds();
+        } catch (err) { alert("Occupied beds cannot be removed!"); }
+    };
     return (
-        <div className="p-6 font-outfit min-h-screen">
-            {/* Header section code same rahega... */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+        <div className="p-6 font-outfit min-h-screen bg-white dark:bg-slate-950">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                        Ward Inventory
-                    </h1>
-                    <p className="text-slate-500 font-medium">Monitoring {beds.length} active units across departments</p>
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-white leading-tight italic">WARD.OS</h1>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Inventory Control</p>
                 </div>
-                <Button onClick={() => setIsModalOpen(true)} className="rounded-2xl px-6 py-6 bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20">
-                    <PlusIcon className="size-5 mr-2" /> Bulk Generator
-                </Button>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={toggleSelectAll}
+                        className={`p-2 rounded-xl border transition-all flex items-center gap-2 ${selectedBeds.length > 0 && selectedBeds.length === filteredBeds.length
+                            ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                            : 'bg-white border-slate-200 text-slate-400 hover:text-blue-600'
+                            }`}
+                    >
+                        {selectedBeds.length > 0 && selectedBeds.length === filteredBeds.length ? <CheckCircleIcon className="size-4" /> : <Squares2X2Icon className="size-4" />}
+                    </button>
+
+                    <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase">
+                        <PlusIcon className="size-4 mr-1.5" /> Bulk Generate
+                    </Button>
+
+                    <button
+                        onClick={() => setIsClearModalOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all text-xs font-bold uppercase"
+                    >
+                        <NoSymbolIcon className="size-4" /> Clear Dept
+                    </button>
+                </div>
             </div>
 
-            {/* Main Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {beds.map((bed: any) => {
-                    const config = TYPE_CONFIG[bed.type] || TYPE_CONFIG.General;
-                    const Icon = config.icon;
+            <div className="flex items-center justify-between gap-4 mb-8 bg-slate-50/50 dark:bg-slate-900/50 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <BedFilters activeFilter={activeFilter} onFilterChange={setActiveFilter} beds={beds} />
 
-                    return (
-                        <div key={bed._id} className={`group relative p-6 rounded-[2.5rem] border-2 ${config.border} ${config.bg} transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
-                            
-                            {/* Status Pill */}
-                            <div className="flex justify-between items-start mb-6">
-                                <div className={`p-3 rounded-2xl bg-gradient-to-br ${config.color} text-white shadow-lg`}>
-                                    <Icon className="size-6" />
-                                </div>
-                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                                    bed.status === 'Available' ? 'bg-white text-emerald-600' : 'bg-slate-900 text-white'
-                                }`}>
-                                    {bed.status}
-                                </div>
-                            </div>
-
-                            {/* Bed Info */}
-                            <div>
-                                <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-1">
-                                    {bed.bedNumber}
-                                </h3>
-                                <p className={`text-xs font-bold uppercase tracking-widest ${config.text}`}>
-                                    {bed.type} Unit
-                                </p>
-                            </div>
-
-                            {/* Department Info */}
-                            <div className="mt-6 flex items-center justify-between">
-                                <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                                    {bed.department}
-                                </div>
-                                
-                                {/* Tiny Profile of creator */}
-                                <div className="flex -space-x-2">
-                                    <div className="size-7 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">
-                                        {bed.createdBy?.firstName?.charAt(0)}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Decorative Background Element */}
-                            <div className={`absolute -bottom-6 -right-6 size-24 rounded-full opacity-10 bg-gradient-to-br ${config.color} blur-2xl group-hover:opacity-20 transition-opacity`} />
-                        </div>
-                    );
-                })}
+                {selectedBeds.length > 0 && (
+                    <button
+                        onClick={handleBulkDelete}
+                        className="flex items-center gap-2 px-5 py-2 rounded-xl bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-200 animate-in slide-in-from-right-4 transition-all hover:bg-rose-700"
+                    >
+                        <TrashIcon className="size-4" />
+                        Delete ({selectedBeds.length})
+                    </button>
+                )}
             </div>
 
-            {/* Modal same logic ke sath... */}
-            {/* Bulk Add Modal */}
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Bulk Bed Generator">
-                <form onSubmit={handleBulkAdd} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Bed Prefix"
-                            placeholder="e.g. ICU- or B-"
-                            value={bulkData.prefix}
-                            onChange={e => setBulkData({ ...bulkData, prefix: e.target.value })}
+            {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 animate-pulse">
+                    {[...Array(12)].map((_, i) => <div key={i} className="h-40 bg-slate-50 rounded-3xl" />)}
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    {filteredBeds.map((bed: any) => (
+                        <BedCard
+                            key={bed._id}
+                            bed={bed}
+                            isSelected={selectedBeds.includes(bed._id)}
+                            onSelect={(id: string) => setSelectedBeds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])}
+                            onDelete={async (id: string, status: string) => {
+                                if (status === 'Occupied') return alert("Occupied units cannot be removed!");
+                                if (confirm("Remove this unit?")) { await axios.delete(`/api/beds?id=${id}`); fetchBeds(); }
+                            }}
                         />
-                        <Input
-                            label="Start Number"
-                            type="number"
-                            value={bulkData.startNumber}
-                            onChange={e => setBulkData({ ...bulkData, startNumber: Number(e.target.value) })}
-                        />
+                    ))}
+                </div>
+            )}
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Generate Multiple Beds">
+                <form onSubmit={handleBulkAdd} className="space-y-4 p-2 font-outfit">
+                    <div className="grid grid-cols-2 gap-3">
+                        <Input required={true} label="Prefix" value={bulkData.prefix} onChange={e => setBulkData({ ...bulkData, prefix: e.target.value })} />
+                        <Input required={true} label="Start #" type="number" value={bulkData.startNumber} onChange={e => setBulkData({ ...bulkData, startNumber: Number(e.target.value) })} />
+                    </div>
+                    <Input required={true} label="Units Count" type="number" value={bulkData.count} onChange={e => setBulkData({ ...bulkData, count: Number(e.target.value) })} />
+                    <div className="grid grid-cols-2 gap-3">
+                        <Input label="Type" required={true} isSelect options={[{ value: 'General', label: 'General' }, { value: 'ICU', label: 'ICU' }, { value: 'Ventilator', label: 'Ventilator' }, { value: 'Emergency', label: 'Emergency' }]} value={bulkData.type} onChange={e => setBulkData({ ...bulkData, type: e.target.value })} />
+                        <Input label="Department" required={true} isSelect options={departments} value={bulkData.department} onChange={e => setBulkData({ ...bulkData, department: e.target.value })} placeholder="Select Dept" />
+                    </div>
+                    <Button type="submit" className="w-full py-4 mt-2 bg-blue-600 text-white text-xs font-black uppercase tracking-widest">Build Inventory</Button>
+                </form>
+            </Modal>
+
+            <Modal isOpen={isClearModalOpen} onClose={() => setIsClearModalOpen(false)} title="Clear Department Inventory">
+                <form onSubmit={handleClearDeptSubmit} className="space-y-6 p-2 font-outfit text-center">
+                    <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100 flex flex-col items-center">
+                        <ExclamationTriangleIcon className="size-10 text-rose-500 mb-2" />
+                        <p className="text-xs font-bold text-rose-800 uppercase tracking-tight">Danger Zone</p>
+                        <p className="text-[11px] text-rose-600 mt-1">This will delete all available beds in the selected department.</p>
                     </div>
 
                     <Input
-                        label="Number of Beds to Create"
-                        type="number"
-                        value={bulkData.count}
-                        onChange={e => setBulkData({ ...bulkData, count: Number(e.target.value) })}
+                        label="Select Department to Wipe"
+                        isSelect
+                        options={departments}
+                        value={clearDeptId}
+                        onChange={e => setClearDeptId(e.target.value)}
+                        placeholder="Choose Department"
+                        required={true}
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Type"
-                            isSelect
-                            options={[
-                                { value: 'General', label: 'General Bed' },
-                                { value: 'ICU', label: 'ICU Bed' },
-                                { value: 'Ventilator', label: 'Ventilator Bed' },
-                                { value: 'Emergency', label: 'Emergency Bed' }
-                            ]}
-                            value={bulkData.type}
-                            onChange={e => setBulkData({ ...bulkData, type: e.target.value })}
-                        />
-                        <Input
-                            label="Department"
-                            placeholder="e.g. Ward 1"
-                            value={bulkData.department}
-                            onChange={e => setBulkData({ ...bulkData, department: e.target.value })}
-                        />
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsClearModalOpen(false)}
+                            className="flex-1 py-3.5 rounded-xl bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-1 py-3.5 rounded-xl bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all"
+                        >
+                            Clear Now
+                        </button>
                     </div>
-
-                    <Button type="submit" className="w-full py-4 mt-2 font-bold tracking-wide">
-                        Generate {bulkData.count} {bulkData.type} Beds
-                    </Button>
                 </form>
             </Modal>
         </div>
