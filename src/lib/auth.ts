@@ -18,6 +18,8 @@ export const generateTokenAndUserResponse = (user: any) => {
         status: user.status,
         specialization: user.specialization,
         phone: user.phone,
+        image: user.image,
+        hospitalId: user.hospitalId
     };
 
     return { token, user: userData };

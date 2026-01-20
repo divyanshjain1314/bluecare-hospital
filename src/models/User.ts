@@ -4,31 +4,48 @@ const UserSchema = new Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    department: { type: String, required: true },
     password: { type: String },
     role: {
         type: String,
-        enum: ['doctor', 'admin', 'superadmin'],
-        default: 'doctor'
+        enum: ['doctor', 'admin', 'superadmin', 'nurse', 'staff', 'patient'],
+        default: 'patient'
     },
     status: {
         type: String,
         enum: ['Active', 'On Leave', 'Inactive', 'Suspended', 'Retired'],
         default: 'Active'
     },
+
     image: { type: String },
-    specialization: { type: String },
     phone: { type: String },
-    invitationToken: {
+    gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+    dob: { type: Date },
+    address: { type: String },
+
+    specialization: { type: String },
+    department: { type: String },
+    experience: { type: Number },
+    licenseNumber: { type: String },
+    degree: { type: String },
+
+    bloodGroup: {
         type: String,
-        default: null
+        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
     },
-    invitationTokenExpires: {
-        type: Date,
-        default: null
+    emergencyContact: { type: String },
+    allergies: [{ type: String }],
+
+    invitationToken: { type: String, default: null },
+    invitationTokenExpires: { type: Date, default: null },
+    hospitalId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Setting',
+        required: function () { return this.role === 'admin'; }
     },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
+
 }, { timestamps: true });
+
+// Performance ke liye indexing
+UserSchema.index({ email: 1, role: 1 });
 
 export default models.User || model('User', UserSchema);

@@ -8,10 +8,17 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import Link from 'next/link';
 
+type Role = 'patient' | 'doctor' | 'admin';
+
 export default function RegisterPage() {
     const router = useRouter();
+    const [role, setRole] = useState<Role>('patient');
+
     const [formData, setFormData] = useState({
-        firstName: '', lastName: '', email: '', department: '', password: ''
+        firstName: '', lastName: '', email: '', password: '',
+        hospitalName: '', address: '',
+        specialization: '', licenseNumber: '',
+        bloodGroup: '', dob: ''
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -27,24 +34,24 @@ export default function RegisterPage() {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('/api/auth/register', formData);
-
-            if (response.status === 201) {
-                router.push('/login');
-            }
+            // Backend ko role aur sara data bhej rahe hain
+            const response = await axios.post('/api/auth/register', { ...formData, role });
+            if (response.status === 201) router.push('/login');
         } catch (err: any) {
-            setError(err.response?.data?.error || "Registration failed. Please try again.");
+            setError(err.response?.data?.error || "Registration failed.");
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <AuthWrapper title="Create Account" subtitle="Join BlueCare Health Systems">
+        <AuthWrapper
+            title={role === 'admin' ? "Register Hospital" : role === 'doctor' ? "Doctor Onboarding" : "Create Account"}
+            subtitle="Join BlueCare Health Systems"
+        >
             <form onSubmit={handleSubmit} className="space-y-4">
-
                 {error && (
-                    <div className="rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-600 ring-1 ring-inset ring-rose-200 dark:bg-rose-900/10 dark:text-rose-400 dark:ring-rose-900/50">
+                    <div className="rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-600 ring-1 ring-inset ring-rose-200">
                         {error}
                     </div>
                 )}
@@ -56,46 +63,75 @@ export default function RegisterPage() {
 
                 <Input label="Email Address" name="email" type="email" placeholder="name@hospital.com" onChange={handleChange} required />
 
-                <Input
-                    label="Department"
-                    name="department"
-                    isSelect
-                    placeholder="Select Department"
-                    onChange={handleChange}
-                    required
-                    options={[
-                        { value: 'cardiology', label: 'Cardiology' },
-                        { value: 'orthopedics', label: 'Orthopedics' },
-                        { value: 'pediatrics', label: 'Pediatrics' },
-                        { value: 'general', label: 'General Medicine' }
-                    ]}
-                />
+
+                {role === 'admin' && (
+                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                        <Input label="Hospital Name" name="hospitalName" placeholder="City General Hospital" onChange={handleChange} required />
+                        <Input label="Hospital Address" name="address" placeholder="Full Location" onChange={handleChange} required />
+                    </div>
+                )}
+
+                {role === 'doctor' && (
+                    <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+                        <Input label="Specialization" name="specialization" placeholder="Cardiologist" onChange={handleChange} required />
+                        <Input label="License No." name="licenseNumber" placeholder="MC-12345" onChange={handleChange} required />
+                    </div>
+                )}
+
+                {role === 'patient' && (
+                    <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+                        <Input
+                            label="Blood Group"
+                            name="bloodGroup"
+                            isSelect
+                            onChange={handleChange}
+                            options={[
+                                { value: 'O+', label: 'O+' }, { value: 'A+', label: 'A+' },
+                                { value: 'B+', label: 'B+' }, { value: 'AB+', label: 'AB+' }
+                            ]}
+                        />
+                        <Input label="DOB" name="dob" type="date" onChange={handleChange} required />
+                    </div>
+                )}
 
                 <Input label="Password" name="password" type="password" placeholder="••••••••" onChange={handleChange} required />
 
-                <div className="flex items-center gap-2 py-2">
-                    <input type="checkbox" id="terms" required className="size-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                    <label htmlFor="terms" className="text-xs text-slate-500 dark:text-slate-400 font-outfit">
-                        I agree to the <Link href="#" className="text-blue-600 font-semibold">Privacy Policy</Link>
-                    </label>
-                </div>
-
-                <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full py-3.5 font-semibold"
-                >
-                    {isLoading ? "Creating Account..." : "Register Account"}
+                <Button type="submit" disabled={isLoading} className="w-full py-4 mt-2 bg-blue-600 rounded-2xl font-bold text-xs uppercase tracking-widest text-white shadow-lg shadow-blue-200">
+                    {isLoading ? "Wait..." : `Register as ${role}`}
                 </Button>
 
-                <div className="mt-6 text-center text-sm font-outfit">
-                    <span className="text-slate-500 dark:text-slate-400">Already have an account?</span>{' '}
-                    <Link
-                        href="/login"
-                        className="font-bold text-blue-600 hover:text-blue-700 underline-offset-4 hover:underline transition-all"
-                    >
-                        Sign In
-                    </Link>
+                <div className="mt-8 pt-6 border-t border-slate-100 text-center space-y-3">
+                    {role !== 'doctor' && (
+                        <p className="text-[11px] font-medium text-slate-500">
+                            Are you a Doctor?{' '}
+                            <button type="button" onClick={() => setRole('doctor')} className="text-blue-600 font-bold hover:underline">
+                                Register as Doctor
+                            </button>
+                        </p>
+                    )}
+
+                    {role !== 'admin' && (
+                        <p className="text-[11px] font-medium text-slate-500">
+                            Having a hospital?{' '}
+                            <button type="button" onClick={() => setRole('admin')} className="text-blue-600 font-bold hover:underline">
+                                Register Hospital
+                            </button>
+                        </p>
+                    )}
+
+                    {role !== 'patient' && (
+                        <p className="text-[11px] font-medium text-slate-500">
+                            Not a medical staff?{' '}
+                            <button type="button" onClick={() => setRole('patient')} className="text-blue-600 font-bold hover:underline">
+                                Register as Patient
+                            </button>
+                        </p>
+                    )}
+
+                    <div className="pt-4 text-xs">
+                        <span className="text-slate-500">Already have an account?</span>{' '}
+                        <Link href="/login" className="font-bold text-slate-900 hover:text-blue-600 transition-all">Sign In</Link>
+                    </div>
                 </div>
             </form>
         </AuthWrapper>
