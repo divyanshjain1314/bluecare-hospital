@@ -44,7 +44,7 @@ export default function PatientsPage() {
             header: "Patient Name",
             accessor: (p) => (
                 <div>
-                    <div className="font-medium text-slate-900 dark:text-white">{p.name}</div>
+                    <div className="font-medium text-slate-900 dark:text-white">{p.firstName} {p.lastName}</div>
                 </div>
             )
         },

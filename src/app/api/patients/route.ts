@@ -54,9 +54,9 @@ export async function POST(request: Request) {
             address
         } = body;
 
-        // if (!firstName || !lastName || !hospitalId) {
-        //     return NextResponse.json({ error: "Name and Hospital ID are required" }, { status: 400 });
-        // }
+        if (!hospitalId) {
+            return NextResponse.json({ error: "Hospital ID are required" }, { status: 400 });
+        }
 
         if (email) {
             const existingPatient = await User.findOne({ email });

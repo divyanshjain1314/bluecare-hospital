@@ -1,6 +1,7 @@
 export interface Patient {
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     age: number;
     gender: 'Male' | 'Female' | 'Other';
     bloodGroup: string;
@@ -13,7 +14,8 @@ export interface Patient {
 export const mockPatientDb: Patient[] = [
     {
         id: "P-101",
-        name: "Aisha Khan",
+        firstName: "Aisha",
+        lastName: "Khan",
         age: 28,
         gender: "Female",
         bloodGroup: "O+",
@@ -24,8 +26,8 @@ export const mockPatientDb: Patient[] = [
     },
     {
         id: "P-102",
-        name: "Aisha Khan",
-        age: 28,
+        firstName: "Aisha",
+        lastName: "Khan", age: 28,
         gender: "Female",
         bloodGroup: "O+",
         phone: "+91 98765-43210",

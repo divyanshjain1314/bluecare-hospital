@@ -11,7 +11,8 @@ interface PatientFormProps {
 }
 
 interface PatientFormData {
-    name: string;
+    firstName: string;
+    lastName: string;
     age: number | string;
     gender: 'Male' | 'Female' | 'Other';
     bloodGroup: string;
@@ -21,7 +22,8 @@ interface PatientFormData {
 
 export const PatientForm = ({ initialData, onSubmit, isLoading, isView = false }: PatientFormProps) => {
     const [formData, setFormData] = useState<PatientFormData>({
-        name: initialData?.name || '',
+        firstName: initialData?.firstName || '',
+        lastName: initialData?.lastName || '',
         age: initialData?.age || '',
         gender: initialData?.gender || 'Male',
         bloodGroup: initialData?.bloodGroup || 'o+',
@@ -45,8 +47,10 @@ export const PatientForm = ({ initialData, onSubmit, isLoading, isView = false }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <Input label="Patient Full Name" placeholder="e.g. John Doe" value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })} required disabled={isView} />
+            <Input label="Patient First Name" placeholder="e.g. John Doe" value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} required disabled={isView} />
+            <Input label="Patient Last Name" placeholder="e.g. Smith" value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} required disabled={isView} />
 
             <div className="grid grid-cols-2 gap-4">
                 <Input label="Age" type="number" value={formData.age}
