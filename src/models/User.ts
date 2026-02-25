@@ -27,6 +27,7 @@ const UserSchema = new Schema({
         enum: ['Active', 'On Leave', 'Inactive', 'Suspended', 'Retired', 'Stable'],
         default: 'Active'
     },
+    age: { type: Number },
 
     image: { type: String },
     gender: { type: String, enum: ['Male', 'Female', 'Other'] },

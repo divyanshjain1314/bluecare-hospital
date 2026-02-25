@@ -15,7 +15,7 @@ interface PatientFormData {
     authId: string;
     firstName: string;
     lastName: string;
-    age: number | string;
+    age: number | undefined;
     gender: 'Male' | 'Female' | 'Other';
     bloodGroup: string;
     phone: string;
@@ -29,7 +29,7 @@ export const PatientForm = ({ initialData, onSubmit, isLoading, isView = false }
         authId: initialData?.id || '',
         firstName: initialData?.firstName || '',
         lastName: initialData?.lastName || '',
-        age: initialData?.age || '',
+        age: initialData?.age || undefined,
         gender: initialData?.gender || 'Male',
         bloodGroup: initialData?.bloodGroup || 'O+',
         phone: initialData?.phone || '',
@@ -60,7 +60,7 @@ export const PatientForm = ({ initialData, onSubmit, isLoading, isView = false }
 
             <div className="grid grid-cols-2 gap-4">
                 <Input label="Age" type="number" value={formData.age}
-                    onChange={(e) => setFormData({ ...formData, age: e.target.value })} required disabled={isView} />
+                    onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) || undefined })} required disabled={isView} />
                 <Input label="Gender" isSelect value={formData.gender}
                     onChange={handleChange}
                     options={[{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }, { value: 'Other', label: 'Other' }]} />

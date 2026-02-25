@@ -51,6 +51,7 @@ export async function POST(request: Request) {
             gender,
             bloodGroup,
             dob,
+            age,
             hospitalId,
             address
         } = body;
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
             gender,
             bloodGroup,
             dob,
+            age,
             address,
             hospitalId,
             status: 'Active'
