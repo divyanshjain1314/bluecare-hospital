@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 import connectDB from '@/lib/mongodb';
-import Patient from '@/models/Patient';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 
@@ -54,9 +53,9 @@ export async function POST(request: Request) {
             address
         } = body;
 
-        // if (!hospitalId) {
-        //     return NextResponse.json({ error: "Hospital ID are required" }, { status: 400 });
-        // }
+        if (!hospitalId) {
+            return NextResponse.json({ error: "Hospital ID are required" }, { status: 400 });
+        }
 
         if (email) {
             const existingPatient = await User.findOne({ email });

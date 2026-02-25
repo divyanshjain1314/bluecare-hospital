@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose';
 import { generateTokenAndUserResponse } from '@/lib/auth';
-
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
 
 export async function POST(request: Request) {
     try {

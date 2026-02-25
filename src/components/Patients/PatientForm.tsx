@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Patient } from '@/data/patients';
+import { useSelector } from 'react-redux';
 
 interface PatientFormProps {
     initialData?: Patient | null;
@@ -11,6 +12,7 @@ interface PatientFormProps {
 }
 
 interface PatientFormData {
+    authId: string;
     firstName: string;
     lastName: string;
     age: number | string;
@@ -18,10 +20,13 @@ interface PatientFormData {
     bloodGroup: string;
     phone: string;
     status: 'Stable' | 'Critical' | 'Recovered';
+    hospitalId?: string;
 }
 
 export const PatientForm = ({ initialData, onSubmit, isLoading, isView = false }: PatientFormProps) => {
+    const hospitalId = useSelector((state: any) => state.auth.user?.hospitalId);
     const [formData, setFormData] = useState<PatientFormData>({
+        authId: initialData?.id || '',
         firstName: initialData?.firstName || '',
         lastName: initialData?.lastName || '',
         age: initialData?.age || '',
@@ -29,6 +34,7 @@ export const PatientForm = ({ initialData, onSubmit, isLoading, isView = false }
         bloodGroup: initialData?.bloodGroup || 'O+',
         phone: initialData?.phone || '',
         status: initialData?.status || 'Stable',
+        hospitalId: hospitalId || ''
     });
 
     const handleSubmit = (e: React.FormEvent) => {
