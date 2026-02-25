@@ -17,14 +17,16 @@ export async function GET(req: Request) {
         if (role === 'superadmin') {
             query = { role: 'patient' };
         }
-        else if (role === 'admin') {
+        else if (role === 'admin' && hospitalId) {
             query = { role: 'patient', hospitalId: hospitalId };
         }
-        else if (role === 'doctor') {
+        else if (role === 'doctor' && hospitalId) {
             query = { role: 'patient', hospitalId: hospitalId };
         }
         else {
-            query = { role: 'patient', email: email };
+            if (email) {
+                query = { role: 'patient', email: email };
+            }
         }
 
         const patients = await User.find(query).sort({ createdAt: -1 });
