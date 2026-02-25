@@ -36,13 +36,8 @@ export async function PUT(request: Request) {
 
         const body = await request.json();
 
-        let targetId;
+        let targetId = body.id || decoded.id;
 
-        if (decoded.role === 'admin' || decoded.role === 'superadmin' || decoded.role === 'doctor') {
-            targetId = body.id;
-        } else {
-            targetId = decoded.id;
-        }
 
         if (!targetId) {
             return NextResponse.json({ error: "Target ID is missing" }, { status: 400 });
