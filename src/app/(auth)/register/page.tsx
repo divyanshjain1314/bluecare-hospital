@@ -18,7 +18,7 @@ export default function RegisterPage() {
         firstName: '', lastName: '', phone: '', email: '', password: '',
         hospitalName: '', address: '',
         specialization: '', licenseNumber: '',
-        bloodGroup: '', dob: ''
+        bloodGroup: 'O+', dob: ''
     });
 
     const [isLoading, setIsLoading] = useState(false);
