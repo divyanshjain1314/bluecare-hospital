@@ -26,7 +26,7 @@ export const PatientForm = ({ initialData, onSubmit, isLoading, isView = false }
         lastName: initialData?.lastName || '',
         age: initialData?.age || '',
         gender: initialData?.gender || 'Male',
-        bloodGroup: initialData?.bloodGroup || 'o+',
+        bloodGroup: initialData?.bloodGroup || 'O+',
         phone: initialData?.phone || '',
         status: initialData?.status || 'Stable',
     });
