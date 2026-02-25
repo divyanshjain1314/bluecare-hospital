@@ -11,16 +11,17 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
 
 import { PatientForm } from '@/components/Patients/PatientForm';
+import { useAuthPermissions } from '@/hooks/useAuthPermissions';
 
 export default function PatientsPage() {
     const { user } = useSelector((state: RootState) => state.auth);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
     const [patients, setPatients] = useState<Patient[]>([]);
     const [loading, setLoading] = useState(true);
     const [isViewMode, setIsViewMode] = useState(false);
+    const { can } = useAuthPermissions();
 
     const fetchPatients = async () => {
         try {
@@ -63,10 +64,16 @@ export default function PatientsPage() {
             accessor: (p) => (
                 <div className="flex justify-end gap-2">
                     <button onClick={() => openViewModal(p)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"><EyeIcon className="size-5" /></button>
-                    <button onClick={() => openEditModal(p)} className="p-1.5 hover:bg-amber-50 text-amber-600 rounded-lg transition-colors"><PencilIcon className="size-5" /></button>
-                    <button onClick={() => handleDelete(p.id)} className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg transition-colors">
-                        <TrashIcon className="size-5" />
-                    </button>
+                    {can('patients', 'edit') && <button onClick={() => openEditModal(p)} className="p-1.5 hover:bg-amber-50 text-amber-600 rounded-lg transition-colors"><PencilIcon className="size-5" /></button>}
+                    {can('patients', 'delete') &&
+                        (
+                            <button onClick={() => handleDelete(p.id)} className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg transition-colors">
+                                <TrashIcon className="size-5" />
+                            </button>
+
+                        )
+                    }
+
                 </div>
             )
         }
@@ -120,9 +127,13 @@ export default function PatientsPage() {
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold font-outfit">My Patients</h1>
-                <button onClick={openAddModal} className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2">
-                    <PlusIcon className="size-5" /> Add Patient
-                </button>
+                {
+                    can('patients', 'add') && (
+                        <button onClick={openAddModal} className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2">
+                            <PlusIcon className="size-5" /> Add Patient
+                        </button>
+                    )
+                }
             </div>
 
             <DataTable

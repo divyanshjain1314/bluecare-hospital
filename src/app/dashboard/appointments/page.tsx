@@ -10,6 +10,8 @@ import { Modal } from '@/components/ui/Modal';
 import { AppointmentForm } from '@/components/appointments/AppointmentForm';
 import moment from 'moment';
 import { Input } from '@/components/ui/Input';
+import { useAuthPermissions } from '@/hooks/useAuthPermissions';
+import { ca } from 'date-fns/locale';
 
 export default function AppointmentsPage() {
     const { user } = useSelector((state: RootState) => state.auth);
@@ -24,7 +26,7 @@ export default function AppointmentsPage() {
         data: {} as any
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const { can } = useAuthPermissions();
 
     const handleFormSubmit = async (formData: any) => {
         setIsSubmitting(true);
@@ -123,17 +125,24 @@ export default function AppointmentsPage() {
                         <EyeIcon className="size-5" />
                     </button>
                     {/* Edit  */}
-                    <button onClick={() => { setModalState({ isOpen: true, mode: 'edit', data: appt }); }} className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors">
-                        <PencilSquareIcon className="size-5" />
-                    </button>
-                    <button onClick={() => { handleDelete(appt._id) }} className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors">
-                        <TrashIcon className="size-5" />
-                    </button>
+                    {
+                        can('appointments', 'edit') && (
+                            <button onClick={() => { setModalState({ isOpen: true, mode: 'edit', data: appt }); }} className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors">
+                                <PencilSquareIcon className="size-5" />
+                            </button>
+                        )
+                    }
+                    {
+                        can('appointments', 'delete') && (
+                            <button onClick={() => { handleDelete(appt._id) }} className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors">
+                                <TrashIcon className="size-5" />
+                            </button>
+                        )
+                    }
                 </div>
             )
         }
     ];
-
     return (
         <div className="p-6 font-outfit">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -146,10 +155,10 @@ export default function AppointmentsPage() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3 min-w-[300px]">
-                    <div className="w-full max-w-[200px]">
+                <div className="flex items-center gap-3 min-w-75">
+                    <div className="w-full max-w-50">
                         <Input
-                            label="" 
+                            label=""
                             isSelect
                             value={filterStatus}
                             onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
@@ -159,16 +168,19 @@ export default function AppointmentsPage() {
                                 { value: "Completed", label: "Completed" },
                                 { value: "Cancelled", label: "Cancelled" }
                             ]}
-                            className="!py-2.5 w-full min-w-40"
+                            className="py-2.5! w-full min-w-40"
                         />
                     </div>
-
-                    <button
-                        onClick={() => setModalState({ isOpen: true, mode: 'new', data: null })}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-100 dark:shadow-none whitespace-nowrap"
-                    >
-                        <PlusIcon className="size-5" /> New Appointment
-                    </button>
+                    {
+                        can('appointments', 'add') && (
+                            <button
+                                onClick={() => setModalState({ isOpen: true, mode: 'new', data: null })}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-100 dark:shadow-none whitespace-nowrap"
+                            >
+                                <PlusIcon className="size-5" /> New Appointment
+                            </button>
+                        )
+                    }
                 </div>
             </div>
 

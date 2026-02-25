@@ -15,7 +15,7 @@ export default function RegisterPage() {
     const [role, setRole] = useState<Role>('patient');
 
     const [formData, setFormData] = useState({
-        firstName: '', lastName: '', email: '', password: '',
+        firstName: '', lastName: '', phone: '', email: '', password: '',
         hospitalName: '', address: '',
         specialization: '', licenseNumber: '',
         bloodGroup: '', dob: ''
@@ -62,7 +62,7 @@ export default function RegisterPage() {
                 </div>
 
                 <Input label="Email Address" name="email" type="email" placeholder="name@hospital.com" onChange={handleChange} required />
-
+                <Input label="Phone Number" name="phone" type="tel" placeholder="+1 234 567 8900" onChange={handleChange} required />
 
                 {role === 'admin' && (
                     <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">

@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import axios from 'axios';
+import { store } from '@/store/store';
 
 export default function SettingsPage() {
     const { user } = useSelector((state: any) => state.auth);
@@ -80,6 +81,7 @@ export default function SettingsPage() {
     };
 
     const handleSave = async () => {
+        const token = store.getState().auth.token;
         setLoading(true);
         try {
             await axios.put('/api/settings', {
@@ -96,6 +98,10 @@ export default function SettingsPage() {
                     hospitalName: formData.hospitalName,
                     address: formData.hospitalAddress,
                     hospitalLogo: formData.hospitalLogo
+                }
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
                 }
             });
 

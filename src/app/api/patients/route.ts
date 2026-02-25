@@ -2,20 +2,37 @@ import { NextResponse } from 'next/server';
 
 import connectDB from '@/lib/mongodb';
 import Patient from '@/models/Patient';
+import User from '@/models/User';
+import bcrypt from 'bcryptjs';
 
-export async function GET(request: Request) {
+export async function GET(req: Request) {
     try {
         await connectDB();
-        const patients = await Patient.find({}).lean();
+        const { searchParams } = new URL(req.url);
+        const role = searchParams.get('role');
+        const hospitalId = searchParams.get('hospitalId');
+        const email = searchParams.get('email');
 
-        const formattedPatients = patients.map((p: any) => ({
-            ...p,
-            id: p._id.toString(),
-        }));
+        let query = {};
 
-        return NextResponse.json(formattedPatients);
-    } catch (error) {
-        return NextResponse.json({ error: "Fetch Failed" }, { status: 500 });
+        if (role === 'superadmin') {
+            query = { role: 'patient' };
+        }
+        else if (role === 'admin') {
+            query = { role: 'patient', hospitalId: hospitalId };
+        }
+        else if (role === 'doctor') {
+            query = { role: 'patient', hospitalId: hospitalId };
+        }
+        else {
+            query = { role: 'patient', email: email };
+        }
+
+        const patients = await User.find(query).sort({ createdAt: -1 });
+        return NextResponse.json(patients);
+
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
@@ -23,23 +40,46 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         await connectDB();
-
         const body = await request.json();
-        const { name, age, gender, bloodGroup, phone, status, createdBy } = body;
 
-        if (!name || !createdBy) {
-            return NextResponse.json({ error: "Name and Creator email are required" }, { status: 400 });
-        }
-
-        const newPatient = await Patient.create({
-            name,
-            age: Number(age),
+        const {
+            firstName,
+            lastName,
+            email,
+            phone,
             gender,
             bloodGroup,
+            dob,
+            hospitalId,
+            address
+        } = body;
+
+        // if (!firstName || !lastName || !hospitalId) {
+        //     return NextResponse.json({ error: "Name and Hospital ID are required" }, { status: 400 });
+        // }
+
+        if (email) {
+            const existingPatient = await User.findOne({ email });
+            if (existingPatient) {
+                return NextResponse.json({ error: "Patient with this email already exists" }, { status: 400 });
+            }
+        }
+
+        const defaultPassword = await bcrypt.hash("Patient@123", 10);
+
+        const newPatient = await User.create({
+            firstName,
+            lastName,
+            email: email || `temp_${Date.now()}@wardos.com`,
+            password: defaultPassword,
+            role: 'patient',
             phone,
-            status: status || 'Stable',
-            lastVisit: new Date().toISOString().split('T')[0],
-            createdBy
+            gender,
+            bloodGroup,
+            dob,
+            address,
+            hospitalId,
+            status: 'Active'
         });
 
         return NextResponse.json(newPatient, { status: 201 });
@@ -47,7 +87,7 @@ export async function POST(request: Request) {
     } catch (error: any) {
         console.error("POST Error:", error);
         return NextResponse.json({
-            error: "Failed to create patient",
+            error: "Failed to create patient record",
             details: error.message
         }, { status: 500 });
     }

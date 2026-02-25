@@ -13,7 +13,7 @@ import { setCredentials } from '@/store/features/authSlice';
 export default function LoginPage() {
     const router = useRouter();
     const [formData, setFormData] = useState({
-        email: '',
+        identifier: '',
         password: ''
     });
 
@@ -26,7 +26,12 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+
+        if (!formData.identifier) {
+            setError("Email or Phone number is required");
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -60,10 +65,11 @@ export default function LoginPage() {
                 )}
 
                 <Input
-                    label="Email Address"
-                    name="email"
-                    type="email"
-                    placeholder="admin@bluecare.com"
+                    label="Email or Phone Number"
+                    name="identifier"
+                    type="text"
+                    placeholder="Enter email or +91..."
+                    value={formData.identifier}
                     onChange={handleChange}
                     required
                 />

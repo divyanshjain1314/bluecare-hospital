@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
         // Destructure all possible fields from dynamic form
         const {
-            firstName, lastName, email, password, role,
+            firstName, lastName, email, phone, password, role,
             hospitalName, address, // Admin fields
             specialization, licenseNumber, // Doctor fields
             bloodGroup, gender, dob // Patient/Common fields
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
             role: role || 'patient',
             gender,
             dob,
-            phone: body.phone,
+            phone,
             hospitalId: finalHospitalId,
         };
 

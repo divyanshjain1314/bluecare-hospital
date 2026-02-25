@@ -39,15 +39,15 @@ export const AppointmentForm = ({ initialData, onSubmit, isLoading, isView = fal
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Patients fetch karo
-                const patientRes = await axios.get(`/api/patients?email=${user?.email}`);
+                const patientRes = await axios.get(
+                    `/api/patients?role=${user.role}&hospitalId=${user.hospitalId}&email=${user.email}`
+                );
                 setPatients(patientRes.data);
                 setFormData((prev) => ({
                     ...prev,
                     patientId: initialData?.patientId || patientRes.data[0]?._id || '',
                     patientName: initialData?.patientName || patientRes.data[0]?.name || '',
                 }));
-                // Agar Admin hai toh Doctors bhi fetch karo
                 if (user?.role !== 'doctor') {
                     const doctorRes = await axios.get('/api/doctors');
                     setDoctors(doctorRes.data);
@@ -68,7 +68,7 @@ export const AppointmentForm = ({ initialData, onSubmit, isLoading, isView = fal
     };
 
     const datePickerClass = "w-full rounded-xl border border-slate-200 bg-slate-50 px-11 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:focus:ring-blue-900/20";
-
+    console.log('formData inside render:', formData, patients);
     return (
         <form onSubmit={handleSubmit} className="space-y-5 font-outfit">
             <Input

@@ -10,9 +10,14 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
 export async function POST(request: Request) {
     try {
         await connectDB();
-        const { email, password } = await request.json();
+        const { identifier, password } = await request.json();
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({
+            $or: [
+                { email: identifier.toLowerCase() },
+                { phone: identifier }
+            ]
+        });
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 401 });
         }

@@ -13,6 +13,7 @@ import {
     XMarkIcon
 } from '@heroicons/react/24/outline';
 import { NavItem } from './NavItem';
+import { useAuthPermissions } from '@/hooks/useAuthPermissions';
 
 interface SidebarProps {
     isCollapsed: boolean;
@@ -32,7 +33,8 @@ const menuItems = [
 ];
 
 export const Sidebar = ({ isCollapsed, isOpen, onClose }: SidebarProps) => {
-    const pathname = usePathname();
+    const { can } = useAuthPermissions();
+    const filteredMenu = menuItems.filter(item => can(item.label, 'view'));
 
     return (
         <>
@@ -63,7 +65,7 @@ export const Sidebar = ({ isCollapsed, isOpen, onClose }: SidebarProps) => {
 
                     <nav className="flex-1 px-3 pb-4 overflow-y-auto overflow-x-hidden">
                         <ul className="space-y-1">
-                            {menuItems.map((item) => (
+                            {filteredMenu.map((item) => (
                                 <NavItem
                                     key={item.label}
                                     icon={item.icon}
