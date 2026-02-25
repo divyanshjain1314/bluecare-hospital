@@ -25,7 +25,7 @@ export default function PatientsPage() {
 
     const fetchPatients = async () => {
         try {
-            const res = await axios.get<Patient[]>(`/api/patients?role=${user?.role}`);
+            const res = await axios.get<Patient[]>(`/api/patients?role=${user?.role}&hospitalId=${user?.hospitalId}`);
             setPatients(res.data);
         } catch (err) {
             console.error(err);

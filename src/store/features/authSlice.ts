@@ -7,6 +7,7 @@ interface AuthState {
         email: string;
         department: string;
         role: string;
+        hospitalId: string;
     } | null;
     isAuthenticated: boolean;
 }
