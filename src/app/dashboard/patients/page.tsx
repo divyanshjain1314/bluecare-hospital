@@ -109,8 +109,8 @@ export default function PatientsPage() {
         setIsSubmitting(true);
         try {
             if (selectedPatient) {
-                console.log("Updating patient:", selectedPatient.id, data);
-                await axios.put(`/api/patients/${selectedPatient.id}`, data);
+                console.log("Updating patient:", selectedPatient, data);
+                await axios.put(`/api/patients/${selectedPatient._id || selectedPatient.id}`, data);
             } else {
                 await axios.post('/api/patients', { ...data, createdBy: user?.email });
             }
