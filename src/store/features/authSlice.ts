@@ -6,6 +6,7 @@ interface AuthState {
         firstName: string;
         email: string;
         department: string;
+        role: string;
     } | null;
     isAuthenticated: boolean;
 }
